@@ -137,8 +137,8 @@
             <h2>Features</h2>
             <ul class="feature-list">
                 <li>Lightweight vanilla JavaScript (no dependencies)</li>
-                <li>Webhook integration with retry logic</li>
-                <li>localStorage message persistence</li>
+                <li>Serverless / Cloudflare Worker integration</li>
+                <li>Secure API key handling (backend)</li>
                 <li>Full markdown support (bold, italic, code, links, lists, tables)</li>
                 <li>Typing indicators and smooth animations</li>
                 <li>Responsive design (mobile & desktop)</li>
@@ -168,9 +168,9 @@
         </div>
 
         <div class="demo-section">
-            <h2>Webhook Configuration</h2>
-            <p>The widget is currently configured to send messages to:</p>
-            <div class="code-block">https://your-webhook-endpoint.com/chat</div>
+            <h2>Serverless Configuration</h2>
+            <p>The widget is currently configured to send messages to your Cloudflare Worker:</p>
+            <div class="code-block">https://your-worker.subdomain.workers.dev</div>
 
             <div class="note">
                 <strong>Note:</strong> Make sure your webhook is configured to:
