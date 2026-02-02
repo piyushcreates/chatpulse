@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Demo - Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #111111;
+            margin-bottom: 16px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #555555;
+            margin-bottom: 32px;
+            font-size: 18px;
+        }
+
+        .demo-section {
+            margin-bottom: 32px;
+        }
+
+        .demo-section h2 {
+            color: #111111;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .demo-section p {
+            color: #555555;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #E5E5E5;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .button {
+            background: #F03E3E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+
+        .button:hover {
+            background: #D73737;
+        }
+
+        .button.secondary {
+            background: white;
+            color: #F03E3E;
+            border: 1px solid #F03E3E;
+        }
+
+        .button.secondary:hover {
+            background: #FFF5F5;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+            color: #555555;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #F03E3E;
+            font-weight: bold;
+        }
+
+        .note {
+            background: #FFF5F5;
+            border-left: 4px solid #F03E3E;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+
+        .note strong {
+            color: #F03E3E;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 ChatPulse Demo</h1>
+        <p class="subtitle">Test the chat widget on this page. Click the red button in the bottom-right corner!</p>
+
+        <div class="demo-section">
+            <h2>Features</h2>
+            <ul class="feature-list">
+                <li>Lightweight vanilla JavaScript (no dependencies)</li>
+                <li>Webhook integration with retry logic</li>
+                <li>localStorage message persistence</li>
+                <li>Full markdown support (bold, italic, code, links, lists, tables)</li>
+                <li>Typing indicators and smooth animations</li>
+                <li>Responsive design (mobile & desktop)</li>
+                <li>Locked brand color scheme</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>Test Controls</h2>
+            <button class="button" onclick="ChatWidget.open()">Open Chat</button>
+            <button class="button" onclick="ChatWidget.close()">Close Chat</button>
+            <button class="button secondary" onclick="ChatWidget.clearHistory()">Clear History</button>
+        </div>
+
+        <div class="demo-section">
+            <h2>Try These Messages</h2>
+            <p>Test the markdown parser with these examples:</p>
+            <div class="code-block">
+                This is **bold** and this is *italic*<br>
+                Here's some `inline code`<br>
+                <br>
+                - List item 1<br>
+                - List item 2<br>
+                <br>
+                Check out [this link](https://example.com)
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Webhook Configuration</h2>
+            <p>The widget is currently configured to send messages to:</p>
+            <div class="code-block">https://your-webhook-endpoint.com/chat</div>
+
+            <div class="note">
+                <strong>Note:</strong> Make sure your webhook is configured to:
+                <ul style="margin-top: 8px; padding-left: 20px;">
+                    <li>Accept POST requests with JSON payload</li>
+                    <li>Enable CORS (Access-Control-Allow-Origin: *)</li>
+                    <li>Return JSON response with a "message" field</li>
+                    <li>Use synchronous response mode</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Expected Payload</h2>
+            <p>The widget sends this JSON structure:</p>
+            <div class="code-block">{
+                "message": "User's message text",
+                "sessionId": "session_1234567890_abc123",
+                "timestamp": "2026-02-02T21:35:36+05:30"
+                }</div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Expected Response</h2>
+            <p>Your webhook should return:</p>
+            <div class="code-block">{
+                "message": "Bot's response text (supports markdown)"
+                }</div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Embedding on Your Website</h2>
+            <p>To embed this widget on any website, add these files:</p>
+            <div class="code-block">&lt;link rel="stylesheet" href="widget.css"&gt;
+                &lt;!-- Include widget HTML or use embed.js --&gt;
+                &lt;script src="widget.js"&gt;&lt;/script&gt;</div>
+        </div>
+    </div>
+
+    <!-- Include the chat widget -->
+    <link rel="stylesheet" href="widget.css">
+    <div id="chat-widget-container">
+        <!-- Floating Chat Button -->
+        <div id="chat-widget-button" class="chat-button" aria-label="Open chat">
+            <svg class="chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z"
+                    fill="white" />
+                <path d="M7 9H17V11H7V9ZM7 12H14V14H7V12Z" fill="white" />
+            </svg>
+            <svg class="close-icon hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
+                    fill="white" />
+            </svg>
+        </div>
+
+        <!-- Chat Window -->
+        <div id="chat-widget-window" class="chat-window hidden">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-header-content">
+                    <div class="chat-avatar">
+                        <img src="avatar.png" alt="Social Masla" />
+                    </div>
+                    <div class="chat-header-text">
+                        <h3>Social Masla</h3>
+                        <span class="chat-status">Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator hidden" id="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea id="chat-input" class="chat-input" placeholder="Type your message..." rows="1"
+                        maxlength="2000"></textarea>
+                    <button id="chat-send-button" class="chat-send-button" aria-label="Send message">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="widget.js"></script>
+</body>
+
+</html>
