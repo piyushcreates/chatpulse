@@ -33,45 +33,111 @@ Add AI-powered chat to your website in minutes using **Cloudflare Workers**. No 
 
 ---
 
-## 🚀 Quick Start (Serverless)
+## ⚡ Serverless Configuration (Required)
 
-### 1. Deploy Your Backend (Cloudflare Worker)
+ChatPulse requires a backend to handle messages securely. We recommend **Cloudflare Workers** (Free, fast, and secure).
 
-We provide a ready-to-use example in [`examples/cloudflare-worker`](./examples/cloudflare-worker/).
+### Option 1: The "5-Minute" Setup (No Code Tools)
 
-1. **Install Wrangler:**
-   ```bash
-   npm install -g wrangler
-   ```
+1. **Log in** to [Cloudflare Dashboard](https://dash.cloudflare.com/).
+2. Go to **Workers & Pages** → **Create Application** → **Create Worker**.
+3. Name it `chatpulse-backend` and click **Deploy**.
+4. Click **Edit Code**.
+5. **Delete everything** and paste this exact code:
 
-2. **Deploy the Worker:**
-   ```bash
-   cd examples/cloudflare-worker
-   wrangler deploy
-   ```
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    // 1. Handle CORS (Allow ChatPulse to talk to this worker)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*', // Change to your domain in production
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
 
-3. **Get your Worker URL:** (e.g., `https://chatpulse-backend.your-subdomain.workers.dev`)
+    // 2. Only allow POST requests
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405 });
+    }
 
-### 2. Add Widget to Your Website
+    // 3. Handle the Chat Logic
+    try {
+      const { message, sessionId } = await request.json();
 
-**Download files** (`widget.js`, `widget.css`, `avatar.png`) or usage via CDN.
+      // --- YOUR AI LOGIC GOES HERE ---
+      // Example: Simple Echo Bot
+      // Replace this with your OpenAI / Anthropic API call
+      const responseText = `You said: "${message}"`; 
+      // -------------------------------
 
-```html
-<!-- 1. Add Styles -->
-<link rel="stylesheet" href="widget.css">
-
-<!-- 2. Add Widget Container (or allow script to create it) -->
-<script src="widget.js"></script>
-
-<!-- 3. Configure & Initialize -->
-<script>
-    ChatWidget.config({
-        webhookUrl: 'https://chatpulse-backend.your-subdomain.workers.dev', // Your Worker URL
-        welcomeMessage: 'Hi! How can I help you today?',
-        primaryColor: '#F03E3E' // Optional branding
-    });
-</script>
+      return new Response(JSON.stringify({ message: responseText }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Server Error' }), { status: 500 });
+    }
+  },
+};
 ```
+
+6. Click **Save and Deploy**.
+7. Copy your **Worker URL** (e.g., `https://chatpulse-backend.your-name.workers.dev`).
+8. Paste this URL into your `widget.js` config:
+
+```javascript
+ChatWidget.config({
+    webhookUrl: 'https://chatpulse-backend.your-name.workers.dev', 
+    // ...
+});
+```
+
+### Option 2: Advanced Setup (CLI)
+
+For developers who prefer command line, check out the [`examples/cloudflare-worker`](./examples/cloudflare-worker/) directory for a production-ready template using `wrangler`.
+
+---
+
+## 🔒 Adding AI (OpenAI / Claude)
+
+To make your bot smart, you'll need to call an AI API from your Worker.
+
+**Security Rule #1:** NEVER put your API key in `widget.js` or HTML. Only put it in your Cloudflare Worker.
+
+**Updated Worker Code for OpenAI:**
+
+```javascript
+// ... inside the try block ...
+const { message } = await request.json();
+
+const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${env.OPENAI_API_KEY}` // Securely accessed environment variable
+  },
+  body: JSON.stringify({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "user", content: message }]
+  })
+});
+
+const data = await response.json();
+const aiMessage = data.choices[0].message.content;
+
+return new Response(JSON.stringify({ message: aiMessage }), ...);
+```
+
+**How to set the API Key:**
+1. In Cloudflare Dashboard, go to your Worker → **Settings** → **Variables**.
+2. Add a variable named `OPENAI_API_KEY` with your key.
+3. Click **Save and Deploy**.
 
 ---
 
