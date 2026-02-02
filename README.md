@@ -104,40 +104,66 @@ For developers who prefer command line, check out the [`examples/cloudflare-work
 
 ---
 
-## 🔒 Adding AI (OpenAI / Claude)
+## 🔌 Connecting to AI or Workflows
 
-To make your bot smart, you'll need to call an AI API from your Worker.
+The Cloudflare Worker acts as a bridge. You can connect it to anything!
 
-**Security Rule #1:** NEVER put your API key in `widget.js` or HTML. Only put it in your Cloudflare Worker.
+### Option A: Direct AI (OpenAI / Claude)
 
-**Updated Worker Code for OpenAI:**
-
+**Worker Code:**
 ```javascript
-// ... inside the try block ...
-const { message } = await request.json();
-
 const response = await fetch('https://api.openai.com/v1/chat/completions', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${env.OPENAI_API_KEY}` // Securely accessed environment variable
+    'Authorization': `Bearer ${env.OPENAI_API_KEY}`
   },
   body: JSON.stringify({
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: message }]
   })
 });
-
-const data = await response.json();
-const aiMessage = data.choices[0].message.content;
-
-return new Response(JSON.stringify({ message: aiMessage }), ...);
+// ... handle response ...
 ```
 
-**How to set the API Key:**
-1. In Cloudflare Dashboard, go to your Worker → **Settings** → **Variables**.
-2. Add a variable named `OPENAI_API_KEY` with your key.
-3. Click **Save and Deploy**.
+### Option B: Workflow Automation (n8n, Zapier, Make)
+
+Forward the message to your automation tool to run complex workflows.
+
+**Worker Code:**
+```javascript
+const n8nResponse = await fetch('https://your-n8n-instance.com/webhook/chatbot', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message, sessionId })
+});
+
+const data = await n8nResponse.json();
+return new Response(JSON.stringify({ message: data.output }), ...);
+```
+
+---
+
+## 💻 How to Embed on Your Website
+
+To add ChatPulse to your site, simply paste the following code **before the closing `</body>` tag** of your website's HTML.
+
+```html
+<!-- 1. Load Styles -->
+<link rel="stylesheet" href="https://your-cdn.com/widget.css">
+
+<!-- 2. Load the Widget Script -->
+<script src="https://your-cdn.com/widget.js"></script>
+
+<!-- 3. Configure & Initialize (Add this right after the script) -->
+<script>
+    ChatWidget.config({
+        webhookUrl: 'https://chatpulse-backend.your-subdomain.workers.dev', // ← Your Worker URL from above
+        welcomeMessage: 'Hi! How can I help you today?',
+        primaryColor: '#F03E3E'
+    });
+</script>
+```
 
 ---
 
