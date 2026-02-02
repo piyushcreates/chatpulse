@@ -25,6 +25,12 @@ Perfect for adding AI-powered chat to your website with minimal setup. Works wit
 
 ---
 
+## 🎬 Quick Demo
+
+![ChatPulse Demo](./screenshots/demo.png)
+
+---
+
 ## 🚀 Quick Start
 
 ### Option 1: Direct Inclusion (Recommended)
