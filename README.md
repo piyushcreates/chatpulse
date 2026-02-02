@@ -104,51 +104,42 @@ For developers who prefer command line, check out the [`examples/cloudflare-work
 
 ---
 
-## 🔌 Connecting to AI or Workflows
+## 🔌 Connectivity Options
 
-The Cloudflare Worker acts as a bridge. You can connect it to anything!
+Here is the **Full Code** for the most common integrations. You can copy the entire block and replace your `worker.js` file content.
 
-### Option A: Direct AI (OpenAI / Claude)
+<details>
+<summary><strong>Option A: Connect to n8n / Zapier / Make (Click to Expand)</strong></summary>
 
-**Worker Code:**
-```javascript
-const response = await fetch('https://api.openai.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${env.OPENAI_API_KEY}`
-  },
-  body: JSON.stringify({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: message }]
-  })
-});
-// ... handle response ...
-```
-
-### Option B: Workflow Automation (n8n, Zapier, Make)
-
-Replace the contents of the `try { ... }` block in your worker with this:
+Copy this **entire code** into your Cloudflare Worker:
 
 ```javascript
+export default {
+  async fetch(request, env, ctx) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+
     try {
       const { message, sessionId } = await request.json();
 
-      // ↓↓↓ PASTE THIS CODE HERE ↓↓↓
-      const n8nResponse = await fetch('https://your-n8n-instance.com/webhook/chatbot', {
+      // ↓↓↓ EDIT THIS URL ↓↓↓
+      const WEBHOOK_URL = 'https://your-n8n-instance.com/webhook/chatbot'; 
+
+      const webhookResponse = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, sessionId })
       });
 
-      const data = await n8nResponse.json();
-      // Adjust 'data.output' to match your n8n response node structure
-      const responseText = data.output || data.message;
-      // ↑↑↑ END PASTE ↑↑↑
-
-      return new Response(JSON.stringify({ message: responseText }), {
-        headers: {
-          'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
         },
       });
