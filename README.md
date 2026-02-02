@@ -8,71 +8,58 @@ Add AI-powered chat to your website in minutes using **Cloudflare Workers**. No 
 ![Size](https://img.shields.io/badge/size-<25KB-green.svg)
 ![Architecture](https://img.shields.io/badge/architecture-serverless-orange.svg)
 
-![ChatPulse Demo](./screenshots/demo.png)
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph LR
+    User["User's Browser"] -->|Loads widget.js| CDN["Cloudflare Pages (CDN)"]
+    User -->|Sends Message| Worker["Cloudflare Worker (Backend)"]
+    Worker -->|Forwards Data| n8n["n8n / OpenAI / Database"]
+```
+
+1. **Frontend**: The user loads `widget.js` from a CDN (Cloudflare Pages).
+2. **Security layer**: The widget talks *only* to your Cloudflare Worker.
+3. **Backend**: The Worker acts as a secure proxy, adding keys/secrets and forwarding the request to your actual AI or automation backend (n8n, Zapier, etc).
 
 ---
 
-## ⚡ Why Serverless?
+## 📚 Step-by-Step Setup Guide
 
-- **🔒 Enhanced Security**: Keep your OpenAI/Anthropic API keys safe on the server-side (in Cloudflare Workers), never exposed in frontend code.
-- **🚀 Edge Performance**: Your backend runs on Cloudflare's global network, ensuring low latency for users worldwide.
-- **💰 Cost Effective**: Cloudflare Workers offers a generous free tier (100,000 requests/day).
-- **📈 Infinite Scalability**: Automatically handles traffic spikes without managing servers.
+### Phase 1: The Backend (Cloudflare Worker) 🧠
 
----
-
-## ✨ Features
-
-- 🎨 **Modern Design** - Sleek, shadcn-inspired UI with smooth animations
-- 🪶 **Ultra Lightweight** - <25KB minified + gzipped, zero dependencies
-- 🔗 **Universal Compatibility** - Works with any backend, optimized for Cloudflare Workers
-- 💾 **Message Persistence** - localStorage for conversation history
-- 📝 **Full Markdown Support** - Bold, italic, code blocks, links, lists, tables
-- 📱 **Fully Responsive** - Perfect on mobile and desktop
-- ♿ **Accessible** - WCAG compliant
-
----
-
-## ⚡ Serverless Configuration (Required)
-
-ChatPulse requires a backend to handle messages securely. We recommend **Cloudflare Workers** (Free, fast, and secure).
-
-### Option 1: The "5-Minute" Setup (No Code Tools)
+This worker will be the secure "middleman" that protects your API keys.
 
 1. **Log in** to [Cloudflare Dashboard](https://dash.cloudflare.com/).
 2. Go to **Workers & Pages** → **Create Application** → **Create Worker**.
 3. Name it `chatpulse-backend` and click **Deploy**.
-4. Click **Edit Code**.
-5. **Delete everything** and paste this exact code:
+4. Click **Edit Code**, delete everything, and paste this:
 
 ```javascript
 export default {
   async fetch(request, env, ctx) {
-    // 1. Handle CORS (Allow ChatPulse to talk to this worker)
+    // 1. CORS: Allow your website to talk to this worker
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
-          'Access-Control-Allow-Origin': '*', // Change to your domain in production
+          'Access-Control-Allow-Origin': '*', // Change to your specific domain in production
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         },
       });
     }
 
-    // 2. Only allow POST requests
     if (request.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405 });
     }
 
-    // 3. Handle the Chat Logic
     try {
       const { message, sessionId } = await request.json();
 
-      // --- YOUR AI LOGIC GOES HERE ---
-      // Example: Simple Echo Bot
-      // Replace this with your OpenAI / Anthropic API call
+      // --- YOUR LOGIC GOES HERE (Default: Echo Bot) ---
       const responseText = `You said: "${message}"`; 
-      // -------------------------------
+      // ------------------------------------------------
 
       return new Response(JSON.stringify({ message: responseText }), {
         headers: {
@@ -86,204 +73,127 @@ export default {
   },
 };
 ```
+5. **Deploy** and copy your Worker URL (e.g., `https://chatpulse-backend.your-subdomain.workers.dev`).
 
+---
+
+### Phase 2: The Frontend (Hosting the Widget) 🎨
+
+You need to host `widget.js`, `widget.css`, and `avatar.png` so your website can load them. We recommend **Cloudflare Pages**.
+
+1. Create a **new GitHub repository** (e.g., `chatpulse-cdn`).
+2. Upload `widget.js`, `widget.css`, and `avatar.png` to it.
+3. Go to **Cloudflare Dashboard** -> **Workers & Pages** -> **Create Application**.
+4. Click **Pages** tab -> **Connect to Git** -> Select your new repo.
+5. **Build Settings**: Leave everything blank/default.
 6. Click **Save and Deploy**.
-7. Copy your **Worker URL** (e.g., `https://chatpulse-backend.your-name.workers.dev`).
-8. Paste this URL into your `widget.js` config:
 
-```javascript
-ChatWidget.config({
-    webhookUrl: 'https://chatpulse-backend.your-name.workers.dev', 
-    // ...
-});
-```
-
-### Option 2: Advanced Setup (CLI)
-
-For developers who prefer command line, check out the [`examples/cloudflare-worker`](./examples/cloudflare-worker/) directory for a production-ready template using `wrangler`.
+Cloudflare will give you a CDN URL (e.g., `https://chatpulse-cdn.pages.dev`).
+Your assets are now available at:
+- `https://chatpulse-cdn.pages.dev/widget.js`
+- `https://chatpulse-cdn.pages.dev/widget.css`
 
 ---
 
-## 🔌 Connectivity Options
+### Phase 3: Embedding on Your Website 💻
 
-Here is the **Full Code** for the most common integrations. You can copy the entire block and replace your `worker.js` file content.
+Paste this code **before the closing `</body>` tag** of your website.
 
-<details>
-<summary><strong>Option A: Connect to n8n / Zapier / Make (Click to Expand)</strong></summary>
-
-Copy this **entire code** into your Cloudflare Worker:
-
-```javascript
-export default {
-  async fetch(request, env, ctx) {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      });
-    }
-
-    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
-
-    try {
-      const { message, sessionId } = await request.json();
-
-      // ↓↓↓ EDIT THIS URL ↓↓↓
-      const WEBHOOK_URL = 'https://your-n8n-instance.com/webhook/chatbot'; 
-
-      const webhookResponse = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, sessionId })
-      });
-
-      const data = await webhookResponse.json();
-      // Adjust 'output' or 'message' to match your webhook's JSON response
-      const responseText = data.output || data.message || "Received";
-
-      return new Response(JSON.stringify({ message: responseText }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: 'Error' }), { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } });
-    }
-  },
-};
-```
-</details>
-
-<details>
-<summary><strong>Option B: Connect to OpenAI (ChatGPT) (Click to Expand)</strong></summary>
-
-1. Set your `OPENAI_API_KEY` in Cloudflare Worker Settings → Variables.
-2. Copy this **entire code** into your Cloudflare Worker:
-
-```javascript
-export default {
-  async fetch(request, env, ctx) {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      });
-    }
-
-    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
-
-    try {
-      const { message } = await request.json();
-
-      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini", // or gpt-3.5-turbo
-          messages: [{ role: "user", content: message }]
-        })
-      });
-
-      const data = await aiResponse.json();
-      const responseText = data.choices[0].message.content;
-
-      return new Response(JSON.stringify({ message: responseText }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: 'Error' }), { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } });
-    }
-  },
-};
-```
-</details>
-
----
-
-## 💻 How to Embed on Your Website
-
-To add ChatPulse to your site, simply paste the following code **before the closing `</body>` tag** of your website's HTML.
+> ⚠️ **Important:** Replace the URLs below with YOUR actual CDN and Worker URLs from Phase 1 & 2.
 
 ```html
 <!-- 1. Load Styles -->
-<link rel="stylesheet" href="https://your-cdn.com/widget.css">
+<link rel="stylesheet" href="https://your-new-cdn.pages.dev/widget.css">
 
 <!-- 2. Load the Widget Script -->
-<script src="https://your-cdn.com/widget.js"></script>
+<script src="https://your-new-cdn.pages.dev/widget.js"></script>
 
-<!-- 3. Configure & Initialize (Add this right after the script) -->
+<!-- 3. Configure & Initialize -->
 <script>
     ChatWidget.config({
-        webhookUrl: 'https://chatpulse-backend.your-subdomain.workers.dev', // ← Your Worker URL from above
+        // This is your Backend Worker (The Security Guard)
+        webhookUrl: 'https://chatpulse-backend.your-subdomain.workers.dev', 
+        
         welcomeMessage: 'Hi! How can I help you today?',
-        primaryColor: '#F03E3E'
+        primaryColor: '#F03E3E' 
     });
 </script>
 ```
 
 ---
 
-## 📖 Configuration
+## 🔌 Connecting to AI or Workflows
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `webhookUrl` | URL of your Cloudflare Worker (or any endpoint) | Required |
-| `welcomeMessage` | Initial greeting message | "Hi, how can I help?" |
-| `primaryColor` | Accent color for buttons and user bubbles | `#F03E3E` |
-| `maxRetries` | Retry attempts for failed requests | 3 |
+Now that your worker is listening, connect it to something powerful!
+
+<details>
+<summary><strong>Option A: Connect to n8n / Zapier / Make (Click to Expand)</strong></summary>
+
+Copy this into your Cloudflare Worker:
+
+```javascript
+// ... (inside try block)
+const WEBHOOK_URL = 'https://n8n.your-domain.com/webhook/chatbot'; 
+
+const webhookResponse = await fetch(WEBHOOK_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message, sessionId })
+});
+
+const data = await webhookResponse.json();
+const responseText = data.output || data.message;
+// ...
+```
+</details>
+
+<details>
+<summary><strong>Option B: Connect to OpenAI (ChatGPT) (Click to Expand)</strong></summary>
+
+1. Set `OPENAI_API_KEY` in Worker Settings -> Variables.
+2. Use this code:
+
+```javascript
+// ... (inside try block)
+const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${env.OPENAI_API_KEY}`
+  },
+  body: JSON.stringify({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: message }]
+  })
+});
+// ...
+```
+</details>
+
+---
+
+## 🔒 Security: CORS Guide
+
+If you see a "CORS Error" in your browser console, it means your Worker is blocking your website.
+
+**Rule:** `Access-Control-Allow-Origin` should match the **website where the widget lives**.
+
+**In your Worker Code:**
+```javascript
+headers: {
+  // Allow ONLY your actual website
+  'Access-Control-Allow-Origin': 'https://your-website.com', 
+  // ...
+}
+```
 
 ---
 
 ## 🛠️ Customization
 
-### Branding
-- **Avatar**: Replace `avatar.png` with your own logo.
-- **Colors**: Edit `widget.css` variables or pass `primaryColor` in config.
-- **Header Text**: Edit the HTML structure in `widget.js` (or `widget.html` if using raw HTML).
-
-### Backend Logic
-Edit your Cloudflare Worker (`examples/cloudflare-worker/worker.js`) to change how the bot replies.
-- Connect to **OpenAI** / **ChatGPT**
-- Connect to **Anthropic Claude**
-- Connect to **Supabase** or any database
-- Trigger **n8n** or **Zapier** workflows securely
-
----
-
-## 🔒 Security Best Practices
-
-1. **Never** put API keys in your frontend HTML/JS.
-2. Always use **Secrets** in Cloudflare Workers for keys (`wrangler secret put OPENAI_API_KEY`).
-3. Configure **CORS** in your Worker to only allow requests from your specific domains in production.
-
----
-
-## 📁 Project Structure
-
-```
-chatpulse/
-├── examples/
-│   └── cloudflare-worker/   # Serverless backend example
-├── widget.js                # Core widget logic
-├── widget.css               # Styling
-├── embed.js                 # Loader script
-├── demo.html                # Local testing page
-├── avatar.png               # Default avatar
-└── README.md                # Documentation
-```
-
----
-
-## 📄 License
-
-MIT License. Free for personal and commercial use.
+- **Avatar**: Replace `avatar.png` in your CDN repo with your own logo.
+- **Colors**: Edit `widget.css` or pass `primaryColor` in the config object.
+- **Text**: Customize the `welcomeMessage` in the embed code.
 
 ---
 
