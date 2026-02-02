@@ -21,9 +21,26 @@ export default {
             // 3. Parse the incoming JSON from ChatPulse
             const { message, sessionId } = await request.json();
 
-            // 4. Your AI / Backend Logic goes here
-            // Example: Simple echo bot (Replace this with OpenAI/Anthropic calls)
-            const responseText = await handleChatLogic(message, env);
+            // --- OPTION 1: Simple Echo Bot (Default) ---
+            // const responseText = `You said: "${message}"`;
+
+            // --- OPTION 2: n8n / Zapier / Make Integration ---
+
+            const n8nResponse = await fetch('https://your-n8n-instance.com/webhook/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, sessionId })
+            });
+            const data = await n8nResponse.json();
+            const responseText = data.output || data.message || "No response derived.";
+
+
+            // --- OPTION 3: OpenAI (Uncomment to use) ---
+            /*
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+              // ... (see README for full code)
+            });
+            */
 
             // 5. Return the response in the format ChatPulse expects
             return new Response(JSON.stringify({ message: responseText }), {

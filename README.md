@@ -128,18 +128,31 @@ const response = await fetch('https://api.openai.com/v1/chat/completions', {
 
 ### Option B: Workflow Automation (n8n, Zapier, Make)
 
-Forward the message to your automation tool to run complex workflows.
+Replace the contents of the `try { ... }` block in your worker with this:
 
-**Worker Code:**
 ```javascript
-const n8nResponse = await fetch('https://your-n8n-instance.com/webhook/chatbot', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ message, sessionId })
-});
+    try {
+      const { message, sessionId } = await request.json();
 
-const data = await n8nResponse.json();
-return new Response(JSON.stringify({ message: data.output }), ...);
+      // ↓↓↓ PASTE THIS CODE HERE ↓↓↓
+      const n8nResponse = await fetch('https://your-n8n-instance.com/webhook/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, sessionId })
+      });
+
+      const data = await n8nResponse.json();
+      // Adjust 'data.output' to match your n8n response node structure
+      const responseText = data.output || data.message;
+      // ↑↑↑ END PASTE ↑↑↑
+
+      return new Response(JSON.stringify({ message: responseText }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    } catch (error) { ... }
 ```
 
 ---
