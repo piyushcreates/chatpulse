@@ -10,7 +10,8 @@
     // Configuration
     // ========================================
     const CONFIG = {
-        webhookUrl: 'https://your-webhook-endpoint.com/chat',
+        // This should be your Cloudflare Worker URL, NOT your n8n/direct backend URL
+        webhookUrl: 'https://chatpulse-worker.your-subdomain.workers.dev',
         storagePrefix: 'chatbot_',
         welcomeMessage: 'Hi, how can I help?',
         maxRetries: 3,
