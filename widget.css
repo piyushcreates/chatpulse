@@ -79,6 +79,8 @@ body {
     right: 24px;
     width: 400px;
     height: 600px;
+    max-height: calc(100vh - 120px);
+    /* Prevent going out of viewport on small desktop screens */
     background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 16px;
@@ -115,12 +117,40 @@ body {
     border-bottom: 1px solid var(--color-border);
     padding: 16px 20px;
     flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .chat-header-content {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.chat-header-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: -8px;
+    color: var(--color-text-secondary);
+    border-radius: 50%;
+    display: flex;
+    /* Always visible, but most useful on mobile */
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.chat-header-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-primary);
+}
+
+.chat-header-close svg {
+    width: 24px;
+    height: 24px;
 }
 
 .chat-avatar {
@@ -151,6 +181,12 @@ body {
     font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
+}
+
+.chat-header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .chat-status {
@@ -473,14 +509,27 @@ body {
         right: 0;
         left: 0;
         width: 100%;
-        height: 100%;
-        border-radius: 0;
-        border: none;
+        height: 80vh;
+        /* Reduced from 100% to 80% */
+        border-radius: 16px 16px 0 0;
+        /* Round top corners only */
+        border: 1px solid var(--color-border);
+        border-bottom: none;
+        box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
     }
 
     .chat-button {
-        bottom: 20px;
-        right: 20px;
+        bottom: 16px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .chat-button svg {
+        width: 24px;
+        height: 24px;
     }
 
     .message {
