@@ -140,11 +140,70 @@ export default {
         body: JSON.stringify({ message, sessionId })
       });
 
+      const data = await webhookResponse.json();
+      // Adjust 'output' or 'message' to match your webhook's JSON response
+      const responseText = data.output || data.message || "Received";
+
+      return new Response(JSON.stringify({ message: responseText }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Error' }), { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
+  },
+};
+```
+</details>
+
+<details>
+<summary><strong>Option B: Connect to OpenAI (ChatGPT) (Click to Expand)</strong></summary>
+
+1. Set your `OPENAI_API_KEY` in Cloudflare Worker Settings → Variables.
+2. Copy this **entire code** into your Cloudflare Worker:
+
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       });
-    } catch (error) { ... }
+    }
+
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+
+    try {
+      const { message } = await request.json();
+
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini", // or gpt-3.5-turbo
+          messages: [{ role: "user", content: message }]
+        })
+      });
+
+      const data = await aiResponse.json();
+      const responseText = data.choices[0].message.content;
+
+      return new Response(JSON.stringify({ message: responseText }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Error' }), { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
+  },
+};
 ```
+</details>
 
 ---
 
