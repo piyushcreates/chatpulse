@@ -10,6 +10,14 @@ Add AI-powered chat to your website in minutes using **Cloudflare Workers**. No 
 
 ---
 
+## 📸 Screenshots
+
+![Chat Widget Screenshot 1](screenshots/Screenshot%202026-02-05%20at%2019.50.54.jpg)
+![Chat Widget Screenshot 2](screenshots/Screenshot%202026-02-05%20at%2019.51.37.jpg)
+![Chat Widget Screenshot 3](screenshots/Screenshot%202026-02-05%20at%2019.52.04.jpg)
+
+---
+
 ## 🏗️ Architecture
 
 ```mermaid
