@@ -10,6 +10,13 @@ Add AI-powered chat to your website in minutes using **Cloudflare Workers**. No 
 
 ---
 
+## ✨ Premium UI Features
+
+- **Glassmorphism Header**: Beautiful, blurred header background (`backdrop-filter: blur(12px)`)
+- **Pulse Animations**: Ambient, pure-CSS glowing attention triggers on chat bots.
+- **Mobile Optimized**: Custom mappings to prevent iOS browser zooming and to clear mobile keyboards (`env(safe-area)` usage).
+- **Zero Spacing Overhead**: Natively prevents the injection div from blocking document heights below host sites footers.
+
 ## 📸 Screenshots
 
 View the latest screenshots of the widget in the [screenshots/](screenshots/) directory.

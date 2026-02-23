@@ -11,7 +11,7 @@
     // ========================================
     const CONFIG = {
         // This should be your Cloudflare Worker URL, NOT your n8n/direct backend URL
-        webhookUrl: 'https://chatpulse-worker.your-subdomain.workers.dev',
+        webhookUrl: 'https://chatpulse.socialmasla.workers.dev/',
         storagePrefix: 'chatbot_',
         welcomeMessage: 'Hi, how can I help?',
         primaryColor: '#F03E3E',
@@ -75,8 +75,8 @@
                         </div>
                     </div>
                     <button id="chat-header-close" class="chat-header-close" aria-label="Close chat">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6L18 18"/>
                         </svg>
                     </button>
                 </div>
@@ -102,8 +102,9 @@
                             maxlength="2000"
                         ></textarea>
                         <button id="chat-send-button" class="chat-send-button" aria-label="Send message">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                             </svg>
                         </button>
                     </div>
@@ -113,6 +114,16 @@
 
         const container = document.createElement('div');
         container.id = 'chat-widget-container';
+        // Fix for spacing issue: Force the container to take no document flow space
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '0';
+        container.style.height = '0';
+        container.style.overflow = 'visible';
+        container.style.zIndex = '9999';
+        container.style.pointerEvents = 'none'; // Let clicks pass through to the page behind
+
         container.innerHTML = widgetHTML;
         document.body.appendChild(container); // Inject into body
     }
